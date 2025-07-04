@@ -1,0 +1,227 @@
+import mysql.connector as c
+from colorama import Fore,Style
+import random
+import time
+import os
+global mycursor
+
+con=c.connect(host="localhost", user="root", passwd="The_0tt0m0n_M0nkey",database="student_management_system")
+if con.is_connected():
+    print("Successfully connected")
+else:
+    print("Problem")
+
+mycursor = con.cursor()
+
+
+def welcome():
+    print("#"*188)
+    print(f"{Fore.RED}{Style.BRIGHT}LTIS, NAVI MUMBAI, STUDENT MANAGEMENT PORTAL{Style.RESET_ALL}".center(197, "*"))
+    print("#"*188, "\n\n")
+
+
+def menu():
+    print("Please enter the number given below to access their respective options")
+    print("1 : STUDENT LOGIN")
+    print("2 : ADD STUDENT")
+    print("3 : ABOUT SCHOOL")
+    print("4 : EXIT WEBSITE")
+    choice = int(input("Enter the number to proceed : "))
+    if choice == 1:
+        student_login()
+    elif choice == 2:
+        add_student()
+    elif choice == 3:
+        about_school()
+    elif choice == 4:
+        print(f"\n\n\n\n{Fore.BLUE}{Style.BRIGHT}THANKYOU FOR USING THE PORTAL !!!{Style.RESET_ALL}")
+    else:
+        print("Please enter numbers from 1 to 4 only.\n\n\n\n")
+        menu()
+
+
+
+def student_login():
+    print("Please enter student's roll number and the password to login the portal.")
+    global roll, password
+    roll = int(input("STUDENTS ROLL NO. : "))
+    password = input("PASSWORD WITH WHICH YOU HAVE REGISTERED : ")
+    stu_pw = f"""select pw from information where rollno = {roll}"""
+    mycursor.execute(stu_pw)
+    pwd = mycursor.fetchone()[0]
+    con.commit()
+    if password == pwd:
+        print(f"\n{Fore.BLUE}Password is correct, login successful.{Style.RESET_ALL}")
+        inside_student_login()
+
+    else:
+        print(f"\n{Fore.BLUE}Password or roll number is wrong.{Style.RESET_ALL}")
+        student_login()
+
+def inside_student_login():
+    print("1 : UPDATE PROFILE")
+    print("2 : DEPOSIT FEE")
+    print("3 : LOG OUT")
+    choice = int(input("Enter your choice : "))
+    if choice == 1:
+        update_profile()
+    elif choice == 2:
+        deposite_fee()
+    elif choice == 3:
+        print("\n\n")
+        menu()
+    else:
+        print("Please enter above given options only...")
+        inside_student_login()
+
+def deposite_fee():
+    fee = f"""select fees from rfp where rollno = {roll}"""
+    mycursor.execute(fee)
+    fee_paid = mycursor.fetchone()[0]
+
+    con.commit()
+    if int(fee_paid)!=120000:
+        fee_pending = 120000 - int(fee_paid)
+        print("Fees paid till now = ", fee_paid)
+        print("Fees pending = ", fee_pending)
+        print(
+            f"{Fore.GREEN}To deposite fee kindly use to under given IFS code in the format School Fees of "
+            f"[Full name of student].{Style.RESET_ALL}")
+        print("IFS Code = ltisnavimumbai@sbi")
+        fee_paid_rn = int(input("Enter the fees you have paid now we will verify your payment and get to you = "))
+        fee_left = fee_paid_rn + int(fee_paid)
+        fee_change = f"""update rfp set fees = {fee_left} where rollno = {roll}"""
+        mycursor.execute(fee_change)
+        con.commit()
+        print("Please wait, verifying your payment......")
+        time.sleep(5)
+        print(
+            f"\n\n{Fore.RED}PAYMENT VERIFIED, {fee_paid_rn}, HAS BEEN DEPOSITED TO THE SCHOOL's "
+            f"BANK ACCOUNT.{Style.RESET_ALL}")
+        fee1 = f"""select fees from rfp where rollno = {roll}"""
+        mycursor.execute(fee1)
+        fee_paid1 = mycursor.fetchone()[0]
+        fee_pending1 = 120000 - int(fee_paid1)
+        con.commit()
+        print(f"{Fore.RED}Fees paid till now = ", fee_paid1)
+        print("Fees pending = ", fee_pending1, f"{Style.RESET_ALL}\n")
+        print("The page will be redirected to logged in page in 7 sec")
+        for i in range(1, 8):
+            print(i)
+            time.sleep(1)
+
+        inside_student_login()
+
+    else:
+        print("YOU HAVE PAID THE ENTIRE FEE")
+        print("The page will be redirected to logged in page in 4 sec")
+        for i in range(1, 5):
+            print(i)
+            time.sleep(1)
+
+        inside_student_login()
+
+
+
+
+
+def update_profile():
+    global name, cls, sec, dob, adrs, phone, pw, apw, rollno, record, record2
+    record = []
+    record2 = []
+    print("\nPlease enter the following details to update student information to school's data.\n")
+    name = input("NAME OF STUDENT : ")
+    rollno = int(input("ROLL NUMBER OF STUDENT : "))
+    cls = int(input("CLASS OF STUDENT (In integers only please): "))
+    sec = input("SECTION OF STUDENT : ")
+    dob = int(input("DATE OF BIRTH OF STUDENT DDMMYYYY : "))
+    adrs = input("ADDRESS OF STUDENT : ")
+    phone = int(input("PHONE NUMBER OF STUDENT : "))
+    pw = input("ENTER THE PASSWORD WITH WHICH YOU CAN ACCESS THE PORTAL : ")
+    apw = input("PLEASE ENTER THE PASSWORD AGAIN : ")
+    deleter1 = f"""delete from information where rollno = {roll}"""
+    mycursor.execute(deleter1)
+    con.commit()
+    password_verification2()
+
+
+def add_student():
+    global name, cls, sec, dob, adrs, phone, pw, apw, rollno, record, record2
+    record = []
+    record2 = []
+    print("\nPlease enter the following details to add student information to school's data.\n")
+    name = input("NAME OF STUDENT : ")
+    rollno = int(input("ROLL NUMBER OF STUDENT : "))
+    cls = int(input("CLASS OF STUDENT (In integers only please): "))
+    sec = input("SECTION OF STUDENT : ")
+    dob = int(input("DATE OF BIRTH OF STUDENT DDMMYYYY : "))
+    adrs = input("ADDRESS OF STUDENT : ")
+    phone = int(input("PHONE NUMBER OF STUDENT : "))
+    pw = input("ENTER THE PASSWORD WITH WHICH YOU CAN ACCESS THE PORTAL : ")
+    apw = input("PLEASE ENTER THE PASSWORD AGAIN : ")
+    password_verification1()
+
+
+
+def password_verification1():
+
+    if apw==pw:
+        print("\nSTUDENT REGISTRATION SUCCESSFULL , PLEASE LOGIN TO PROCEED .")
+        record.append(name)
+        record.append(rollno)
+        record.append(cls)
+        record.append(sec)
+        record.append(pw)
+        record.append(adrs)
+        record.append(phone)
+        record.append(dob)
+        record2.append(rollno)
+        record2.append(0)
+        sql = """insert into information(name, rollno, class, sec, pw, address, phoneno, dob) 
+        values(%s,%s,%s,%s,%s,%s,%s,%s)"""
+        sql2 = """insert into rfp(rollno, fees) values(%s,%s)"""
+
+        mycursor.execute(sql2, record2)
+        mycursor.execute(sql, record)
+        con.commit()
+
+        student_login()
+
+    if apw!=pw:
+        print("\nPASSWORD ENTERED IN BOTH PLACES IS NOT SAME PLEASE ENTER SAME PASSWORD .")
+        add_student()
+
+def password_verification2():
+
+    if apw==pw:
+        print("\nSTUDENT PROFILE UPDATED.")
+        record.append(name)
+        record.append(rollno)
+        record.append(cls)
+        record.append(sec)
+        record.append(pw)
+        record.append(adrs)
+        record.append(phone)
+        record.append(dob)
+        sql = """insert into information(name, rollno, class, sec, pw, address, phoneno, dob) 
+        values(%s,%s,%s,%s,%s,%s,%s,%s)"""
+
+        mycursor.execute(sql, record)
+        con.commit()
+
+        student_login()
+
+    if apw!=pw:
+        print("\nPASSWORD ENTERED IN BOTH PLACES IS NOT SAME PLEASE ENTER SAME PASSWORD .")
+        update_profile()
+
+def about_school():
+    file = ("C:\\Users\\KIRAN\\Desktop\\about_school_sms_csip.txt")
+    os.startfile(file)
+    time.sleep(10)
+    print("\n\n\n\n")
+    menu()
+
+
+welcome()
+menu()
